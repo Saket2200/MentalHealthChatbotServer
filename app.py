@@ -38,6 +38,10 @@ def get_response(message):
     response = f"The answer is: {predicted_answer}"
     return response
 
+@app.route('/', methods=['GET'])
+def home():
+    return "Welcome to the Mental Health Chatbot API!"
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
@@ -46,4 +50,4 @@ def chat():
     return jsonify({"response": response})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=True, host='0.0.0.0', port=10000)
