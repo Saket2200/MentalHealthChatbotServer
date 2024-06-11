@@ -11,11 +11,11 @@ app = Flask(__name__)
 nltk.download('punkt')
 
 # Load your CSV file into a DataFrame
-df = pd.read_csv('Mental_Health_FAQ.csv')
+df = pd.read_csv('mentalhealth.csv')
 
-# Assume the CSV has columns 'Questions' and 'Answers'
-texts = df['Questions'].values
-answers = df['Answers'].values
+# Assume the CSV has columns 'questions' and 'answer'
+texts = df['questions'].values
+answers = df['answer'].values
 
 # Train a simple model for intent classification
 vectorizer = TfidfVectorizer(tokenizer=word_tokenize, stop_words='english')
@@ -27,16 +27,22 @@ model.fit(X, answers)
 with open('model.pkl', 'wb') as model_file:
     pickle.dump((vectorizer, model), model_file)
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    message = request.json.get('message')
+def get_response(message):
     with open('model.pkl', 'rb') as model_file:
         vectorizer, model = pickle.load(model_file)
     tokens = word_tokenize(message)
     X = vectorizer.transform([' '.join(tokens)])
     predicted_answer = model.predict(X)[0]
-    response = {"response": predicted_answer}
-    return jsonify(response)
+    response = f"The answer is: {predicted_answer}"
+    return response
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    message = data.get('message', '')
+    response = get_response(message)
+    return jsonify({'response': response})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0')
+
