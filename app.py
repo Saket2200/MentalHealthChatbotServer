@@ -6,16 +6,16 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import pickle
 
-app = Flask(__name__)
-
 nltk.download('punkt')
+
+app = Flask(__name__)
 
 # Load your CSV file into a DataFrame
 df = pd.read_csv('Mental_Health_FAQ.csv')
 
-# Assume the CSV has columns 'questions' and 'answer'
-texts = df['questions'].values
-answers = df['answer'].values
+# Ensure the CSV has columns 'questions' and 'answer'
+texts = df['Questions'].values
+answers = df['Answers'].values
 
 # Train a simple model for intent classification
 vectorizer = TfidfVectorizer(tokenizer=word_tokenize, stop_words='english')
@@ -41,8 +41,7 @@ def chat():
     data = request.get_json()
     message = data.get('message', '')
     response = get_response(message)
-    return jsonify({'response': response})
+    return jsonify({"response": response})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-
