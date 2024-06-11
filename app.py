@@ -11,7 +11,7 @@ app = Flask(__name__)
 nltk.download('punkt')
 
 # Load your CSV file into a DataFrame
-df = pd.read_csv('mentalhealth.csv')
+df = pd.read_csv('Mental_Health_FAQ.csv')
 
 # Assume the CSV has columns 'questions' and 'answer'
 texts = df['questions'].values
