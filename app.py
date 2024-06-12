@@ -1,70 +1,53 @@
+# app.py
+
 from flask import Flask, request, jsonify
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from flask_cors import CORS
-import numpy as np
-from transformers import BertTokenizer, BertForSequenceClassification
-import torch
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+import pickle
 
-# Initialize the Flask application
-app = Flask(__name__)
-CORS(app)
-
-# Download NLTK resources
 nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
 
-# Load the FAQ data from the CSV file
+app = Flask(__name__)
+
+# Load your CSV file into a DataFrame
 df = pd.read_csv('Mental_Health_FAQ.csv')
 
-# Ensure the columns are correct
-if 'Question_ID' in df.columns and 'Questions' in df.columns and 'Answers' in df.columns:
-    questions = df['Questions'].values
-    answers = df['Answers'].values
-else:
-    raise Exception("CSV file does not have the required columns: 'Question_ID', 'Questions', 'Answers'")
+# Ensure the CSV has columns 'questions' and 'answer'
+texts = df['Questions'].values
+answers = df['Answers'].values
 
-# Preprocess text
-stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
+# Train a simple model for intent classification
+vectorizer = TfidfVectorizer(tokenizer=word_tokenize, stop_words='english')
+X = vectorizer.fit_transform(texts)
+model = LogisticRegression()
+model.fit(X, answers)
 
-def preprocess(text):
-    tokens = word_tokenize(text.lower())
-    tokens = [lemmatizer.lemmatize(token) for token in tokens if token.isalnum() and token not in stop_words]
-    return ' '.join(tokens)
+# Save the model and vectorizer
+with open('model.pkl', 'wb') as model_file:
+    pickle.dump((vectorizer, model), model_file)
 
-# Preprocess all questions
-preprocessed_questions = [preprocess(question) for question in questions]
+def get_response(message):
+    with open('model.pkl', 'rb') as model_file:
+        vectorizer, model = pickle.load(model_file)
+    tokens = word_tokenize(message)
+    X = vectorizer.transform([' '.join(tokens)])
+    predicted_answer = model.predict(X)[0]
+    response = f"The answer is: {predicted_answer}"
+    return response
 
-# Load pre-trained BERT model and tokenizer for intent recognition
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+@app.route('/', methods=['GET'])
+def home():
+    return "Welcome to the Mental Health Chatbot API!"
 
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
-    user_message = data.get('message', '')
-    
-    # Preprocess the user message
-    preprocessed_message = preprocess(user_message)
-    
-    # Tokenize the user message
-    inputs = tokenizer(preprocessed_message, return_tensors='pt', truncation=True, padding=True)
-    
-    # Get model predictions
-    outputs = model(**inputs)
-    predictions = torch.argmax(outputs.logits, dim=-1).item()
-    
-    # Find the index of the most similar question based on predictions
-    best_match_index = predictions
-    
-    # Return the corresponding answer
-    best_answer = answers[best_match_index]
-    return jsonify({'response': f"Bot: {best_answer}"})
+    message = data.get('message', '')
+    response = get_response(message)
+    return jsonify({"response": response})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run(debug=True, host='0.0.0.0', port=10000)
