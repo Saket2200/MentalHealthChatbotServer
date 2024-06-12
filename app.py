@@ -1,5 +1,3 @@
-# app.py
-
 from flask import Flask, request, jsonify
 import pandas as pd
 import nltk
@@ -15,7 +13,7 @@ app = Flask(__name__)
 # Load your CSV file into a DataFrame
 df = pd.read_csv('Mental_Health_FAQ.csv')
 
-# Ensure the CSV has columns 'questions' and 'answer'
+# Ensure the CSV has columns 'questions' and 'answers'
 texts = df['Questions'].values
 answers = df['Answers'].values
 
