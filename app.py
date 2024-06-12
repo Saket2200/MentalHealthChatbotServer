@@ -1,53 +1,28 @@
-# app.py
-
 from flask import Flask, request, jsonify
 import pandas as pd
-import nltk
-from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-import pickle
-
-nltk.download('punkt')
+from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 
-# Load your CSV file into a DataFrame
-df = pd.read_csv('Mental_Health_FAQ.csv')
+# Load the CSV file into a pandas DataFrame
+df = pd.read_csv('/mnt/data/Mental_Health_FAQ.csv')
 
-# Ensure the CSV has columns 'questions' and 'answer'
-texts = df['Questions'].values
-answers = df['Answers'].values
-
-# Train a simple model for intent classification
-vectorizer = TfidfVectorizer(tokenizer=word_tokenize, stop_words='english')
-X = vectorizer.fit_transform(texts)
-model = LogisticRegression()
-model.fit(X, answers)
-
-# Save the model and vectorizer
-with open('model.pkl', 'wb') as model_file:
-    pickle.dump((vectorizer, model), model_file)
-
-def get_response(message):
-    with open('model.pkl', 'rb') as model_file:
-        vectorizer, model = pickle.load(model_file)
-    tokens = word_tokenize(message)
-    X = vectorizer.transform([' '.join(tokens)])
-    predicted_answer = model.predict(X)[0]
-    response = f"The answer is: {predicted_answer}"
-    return response
-
-@app.route('/', methods=['GET'])
-def home():
-    return "Welcome to the Mental Health Chatbot API!"
+# Initialize the TfidfVectorizer and fit it on the questions
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df['questions'])
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    data = request.get_json()
-    message = data.get('message', '')
-    response = get_response(message)
-    return jsonify({"response": response})
+    user_message = request.json.get('message')
+    user_vec = vectorizer.transform([user_message])
+    similarity = cosine_similarity(user_vec, X)
+    best_match_idx = similarity.argmax()
+    response = df['answers'].iloc[best_match_idx]
+
+    # Format the response
+    formatted_response = response.replace("The answer is: ", "")
+    return jsonify({'response': formatted_response})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=10000)
+    app.run(debug=True)
