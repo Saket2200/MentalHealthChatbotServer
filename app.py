@@ -10,7 +10,7 @@ df = pd.read_csv('Mental_Health_FAQ.csv')
 
 # Initialize the TfidfVectorizer and fit it on the questions
 vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(df['questions'])
+X = vectorizer.fit_transform(df['Questions'])
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -18,7 +18,7 @@ def chat():
     user_vec = vectorizer.transform([user_message])
     similarity = cosine_similarity(user_vec, X)
     best_match_idx = similarity.argmax()
-    response = df['answers'].iloc[best_match_idx]
+    response = df['Answers'].iloc[best_match_idx]
 
     # Format the response (removing "The answer is: ")
     formatted_response = response.replace("The answer is: ", "")
