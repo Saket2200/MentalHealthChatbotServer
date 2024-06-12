@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 app = Flask(__name__)
 
 # Load the CSV file into a pandas DataFrame
-df = pd.read_csv('/mnt/data/Mental_Health_FAQ.csv')
+df = pd.read_csv('Mental_Health_FAQ.csv')
 
 # Initialize the TfidfVectorizer and fit it on the questions
 vectorizer = TfidfVectorizer()
