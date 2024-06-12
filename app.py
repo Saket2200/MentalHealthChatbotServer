@@ -35,7 +35,7 @@ def get_response(message):
     tokens = word_tokenize(message)
     X = vectorizer.transform([' '.join(tokens)])
     predicted_answer = model.predict(X)[0]
-    response = f"The answer is: {predicted_answer}"
+    response = f"{predicted_answer}"
     return response
 
 @app.route('/', methods=['GET'])
