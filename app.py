@@ -19,7 +19,7 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 
 # Load the FAQ data from the CSV file
-df = pd.read_csv('/mnt/data/Mental_Health_FAQ.csv')
+df = pd.read_csv('Mental_Health_FAQ.csv')
 
 # Ensure the columns are correct
 if 'question_id' in df.columns and 'Questions' in df.columns and 'Answers' in df.columns:
