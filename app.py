@@ -20,7 +20,7 @@ def chat():
     best_match_idx = similarity.argmax()
     response = df['answers'].iloc[best_match_idx]
 
-    # Format the response
+    # Format the response (removing "The answer is: ")
     formatted_response = response.replace("The answer is: ", "")
     return jsonify({'response': formatted_response})
 
