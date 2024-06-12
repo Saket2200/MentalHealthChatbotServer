@@ -22,11 +22,11 @@ nltk.download('wordnet')
 df = pd.read_csv('Mental_Health_FAQ.csv')
 
 # Ensure the columns are correct
-if 'question_id' in df.columns and 'Questions' in df.columns and 'Answers' in df.columns:
+if 'Question_ID' in df.columns and 'Questions' in df.columns and 'Answers' in df.columns:
     questions = df['Questions'].values
     answers = df['Answers'].values
 else:
-    raise Exception("CSV file does not have the required columns: 'question_id', 'Questions', 'Answers'")
+    raise Exception("CSV file does not have the required columns: 'Question_ID', 'Questions', 'Answers'")
 
 # Preprocess text
 stop_words = set(stopwords.words('english'))
