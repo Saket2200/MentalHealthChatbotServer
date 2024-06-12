@@ -3,3 +3,5 @@ pandas
 nltk
 scikit-learn
 gunicorn
+flask_cors
+
